@@ -19,9 +19,9 @@ films_df = pd.read_csv("films_with_genres.csv", encoding="utf-8-sig")
 reviews_df = pd.read_csv("reviews.csv", encoding="utf-8-sig")
 
 # Compute average rating
-avg_reviews = reviews_df.groupby("id")["rating"].mean().reset_index()
+avg_reviews = reviews_df.groupby("movie_id")["rating"].mean().reset_index()
 avg_reviews.rename(columns={"rating": "avg_rating"}, inplace=True)
-films_df = films_df.merge(avg_reviews, on="id", how="left")
+films_df = films_df.merge(avg_reviews, on="movie_id", how="left")
 films_df["avg_rating"] = films_df["avg_rating"].fillna(0)
 
 # Get unique genres
@@ -47,6 +47,6 @@ async def recommend(request: RecommendationRequest):
 
     return {
         "success": True,
-        "data": filtered[["id", "title", "genre", "avg_rating", "Image_URL", "Film_URL"]].to_dict(orient="records")
+        "data": filtered[["movie_id", "title", "genre", "avg_rating", "Image_URL", "Film_URL"]].to_dict(orient="records")
     }
 
