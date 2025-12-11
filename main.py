@@ -21,6 +21,8 @@ reviews_df = pd.read_csv("reviews.csv", encoding="utf-8-sig")
 # Compute average rating
 avg_reviews = reviews_df.groupby("movie_id")["rating"].mean().reset_index()
 avg_reviews.rename(columns={"rating": "avg_rating"}, inplace=True)
+
+# Merge average rating into films dataframe
 films_df = films_df.merge(avg_reviews, on="movie_id", how="left")
 films_df["avg_rating"] = films_df["avg_rating"].fillna(0)
 
@@ -34,7 +36,7 @@ class RecommendationRequest(BaseModel):
 async def recommend(request: RecommendationRequest):
     genres = request.genres
 
-    # Filter films by genres
+    # Filter films by selected genres
     filtered = films_df[
         films_df["genre"].apply(lambda x: any(g in x for g in genres))
     ]
@@ -45,8 +47,15 @@ async def recommend(request: RecommendationRequest):
     # Sort by average rating descending
     filtered = filtered.sort_values("avg_rating", ascending=False)
 
+    # Return relevant fields, matching your CSV naming
     return {
         "success": True,
-        "data": filtered[["movie_id", "title", "genre", "avg_rating", "Image_URL", "Film_URL"]].to_dict(orient="records")
+        "data": filtered[[
+            "id",           # film ID
+            "title",        # film title
+            "genre",        # genres
+            "avg_rating",   # average rating
+            "poster_url",   # poster image
+            "movie_page_url" # film page URL
+        ]].to_dict(orient="records")
     }
-
