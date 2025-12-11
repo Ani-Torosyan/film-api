@@ -23,7 +23,8 @@ avg_reviews = reviews_df.groupby("movie_id")["rating"].mean().reset_index()
 avg_reviews.rename(columns={"rating": "avg_rating"}, inplace=True)
 
 # Merge average rating into films dataframe
-films_df = films_df.merge(avg_reviews, on="movie_id", how="left")
+# Use 'id' from films_df and 'movie_id' from reviews_df
+films_df = films_df.merge(avg_reviews, left_on="id", right_on="movie_id", how="left")
 films_df["avg_rating"] = films_df["avg_rating"].fillna(0)
 
 # Get unique genres
