@@ -19,13 +19,13 @@ films_df = pd.read_csv("films_with_genres.csv", encoding="utf-8-sig")
 reviews_df = pd.read_csv("reviews.csv", encoding="utf-8-sig")
 
 # Compute average rating
-avg_reviews = reviews_df.groupby("film_id")["rating"].mean().reset_index()
+avg_reviews = reviews_df.groupby("id")["rating"].mean().reset_index()
 avg_reviews.rename(columns={"rating": "avg_rating"}, inplace=True)
-films_df = films_df.merge(avg_reviews, on="film_id", how="left")
+films_df = films_df.merge(avg_reviews, on="id", how="left")
 films_df["avg_rating"] = films_df["avg_rating"].fillna(0)
 
 # Get unique genres
-unique_genres = sorted(set(g for genres in films_df["Genres"].dropna() for g in genres.split(", ")))
+unique_genres = sorted(set(g for genres in films_df["genre"].dropna() for g in genres.split(", ")))
 
 class RecommendationRequest(BaseModel):
     genres: list[str]
@@ -36,7 +36,7 @@ async def recommend(request: RecommendationRequest):
 
     # Filter films by genres
     filtered = films_df[
-        films_df["Genres"].apply(lambda x: any(g in x for g in genres))
+        films_df["genre"].apply(lambda x: any(g in x for g in genres))
     ]
 
     if filtered.empty:
@@ -47,6 +47,6 @@ async def recommend(request: RecommendationRequest):
 
     return {
         "success": True,
-        "data": filtered[["film_id", "Title", "Genres", "avg_rating", "Image_URL", "Film_URL"]].to_dict(orient="records")
+        "data": filtered[["id", "title", "genre", "avg_rating", "Image_URL", "Film_URL"]].to_dict(orient="records")
     }
 
